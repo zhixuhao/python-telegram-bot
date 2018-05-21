@@ -1,23 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-"""Simple Bot to reply to Telegram messages.
-
-This program is dedicated to the public domain under the CC0 license.
-
+#
+# Simple Bot to reply to Telegram messages
+# This program is dedicated to the public domain under the CC0 license.
+"""
 This Bot uses the Updater class to handle the bot.
 
-First, a few handler functions are defined. Then, those functions are passed to
+First, a few callback functions are defined. Then, those functions are passed to
 the Dispatcher and registered at their respective places.
 Then, the bot is started and runs until we press Ctrl-C on the command line.
 
 Usage:
-Basic Echobot example, repeats messages.
+Example of a bot-user conversation using ConversationHandler.
+Send /start to initiate the conversation.
 Press Ctrl-C on the command line or send a signal to the process to stop the
 bot.
 """
 
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram import ReplyKeyboardMarkup
+from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, RegexHandler,
+                          ConversationHandler)
+
 import logging
 
 # Enable logging
@@ -26,22 +29,79 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
+CHOOSING, TYPING_REPLY = range(2)
 
-# Define a few command handlers. These usually take the two arguments bot and
-# update. Error handlers also receive the raised TelegramError object in error.
+reply_keyboard = [['Validate Code', 'Help'],
+                  ['Done']]
+markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
+
+
+def facts_to_str(user_data):
+    facts = list()
+
+    for key, value in user_data.items():
+        facts.append('{} - {}'.format(key, value))
+
+    return "\n".join(facts).join(['\n', '\n'])
+
+
 def start(bot, update):
-    """Send a message when the command /start is issued."""
-    update.message.reply_text('Hi! I'am Chaince Bot, nice to meet you!')
+    update.message.reply_text(
+        "Hi! My name is Chaince Bot, Please choose a service",
+        reply_markup=markup)
+
+    return CHOOSING
 
 
-def help(bot, update):
-    """Send a message when the command /help is issued."""
-    update.message.reply_text('Help!')
+def Validate_choice(bot, update):
+    update.message.reply_text('Please input your code')
+
+    return TYPING_REPLY
 
 
-def echo(bot, update):
-    """Echo the user message."""
-    update.message.reply_text(update.message.text)
+def help_choice(bot, update):
+    update.message.reply_text('Please contact @Chaince for help')
+
+    return CHOOSING
+
+
+def received_code(bot, update, user_data):
+    text = update.message.text
+    if(user_data['code']):
+        update.message.reply_text("You have already validated this code!",reply_markup=markup)
+        return CHOOSING
+    update.message.reply_text("This is what you already told me:"
+                              "{}"
+                              "Let me check this code......".format(
+                                  text),reply_markup=markup)
+    if(validate_code(text)):
+        user_data['code'] = text
+        update.message.reply_text("Congratulations! This code:"
+                              "{}"
+                              "is Valid".format(
+                                  text),reply_markup=markup)
+        return CHOOSING
+    else:
+        update.message.reply_text("Sorry, This code:"
+                              "{}"
+                              "is not Valid".format(
+                                  text),reply_markup=markup)
+        return CHOOSING
+
+def validate_code(code):
+    if(len(code) > 5):
+        return True
+    return False
+  
+
+def done(bot, update, user_data):
+    if 'code' in user_data:
+        del user_data['code']
+
+    update.message.reply_text("Thanks for using Chaince Bot")
+
+    user_data.clear()
+    return ConversationHandler.END
 
 
 def error(bot, update, error):
@@ -50,19 +110,33 @@ def error(bot, update, error):
 
 
 def main():
-    """Start the bot."""
-    # Create the EventHandler and pass it your bot's token.
+    # Create the Updater and pass it your bot's token.
     updater = Updater("609834587:AAHmp4q7Qz9_m7EU1YWA_klHu4im3tPN5Oc")
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
 
-    # on different commands - answer in Telegram
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler("help", help))
+    # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
+    conv_handler = ConversationHandler(
+        entry_points=[CommandHandler('start', start)],
 
-    # on noncommand i.e message - echo the message on Telegram
-    dp.add_handler(MessageHandler(Filters.text, echo))
+        states={
+            CHOOSING: [RegexHandler('^(Validate Code)$',
+                                    Validate_choice,
+                                    pass_user_data=False),
+                       RegexHandler('^Help$',
+                                    help_choice),
+                       ],
+            TYPING_REPLY: [MessageHandler(Filters.text,
+                                          received_code,
+                                          pass_user_data=True),
+                           ],
+        },
+
+        fallbacks=[RegexHandler('^Done$', done, pass_user_data=True)]
+    )
+
+    dp.add_handler(conv_handler)
 
     # log all errors
     dp.add_error_handler(error)
