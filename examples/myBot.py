@@ -67,9 +67,11 @@ def help_choice(bot, update):
 
 def received_code(bot, update, user_data):
     text = update.message.text
-    if(user_data['code']):
+    
+    if('code' in user_data):
         update.message.reply_text("You have already validated this code!",reply_markup=markup)
         return CHOOSING
+
     update.message.reply_text("This is what you already told me:"
                               "{}"
                               "Let me check this code......".format(
@@ -121,7 +123,7 @@ def main():
         entry_points=[CommandHandler('start', start)],
 
         states={
-            CHOOSING: [RegexHandler('^Validate Code$',
+            CHOOSING: [RegexHandler('^(Validate Code)$',
                                     Validate_choice,
                                     pass_user_data=False),
                        RegexHandler('^Help$',
