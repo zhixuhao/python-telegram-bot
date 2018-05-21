@@ -121,7 +121,7 @@ def main():
         entry_points=[CommandHandler('start', start)],
 
         states={
-            CHOOSING: [RegexHandler('^(Validate Code)$',
+            CHOOSING: [RegexHandler('^Validate Code$',
                                     Validate_choice,
                                     pass_user_data=False),
                        RegexHandler('^Help$',
