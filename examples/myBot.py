@@ -73,19 +73,19 @@ def received_code(bot, update, user_data):
         return CHOOSING
 
     update.message.reply_text("This is what you already told me:"
-                              "{}"
+                              "{}\n"
                               "Let me check this code......".format(
                                   text),reply_markup=markup)
     if(validate_code(text)):
         user_data['code'] = text
         update.message.reply_text("Congratulations! This code:"
-                              "{}"
+                              "{}\n"
                               "is Valid".format(
                                   text),reply_markup=markup)
         return CHOOSING
     else:
         update.message.reply_text("Sorry, This code:"
-                              "{}"
+                              "{}\n"
                               "is not Valid".format(
                                   text),reply_markup=markup)
         return CHOOSING
