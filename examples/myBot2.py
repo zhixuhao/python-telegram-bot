@@ -42,13 +42,26 @@ def help(bot, update):
 def echo(bot, update,user_data):
     """Echo the user message."""
     text = update.message.text
-    print user_data
-    update.message.reply_text(update.message.text)
-    if("/valid" in text):
-        text = text[6:]
-        text = text.strip()
-        update.message.reply_text(update.message.text)
+    if("valid" in text):
+        if(text[:5] == "valid"):
+            code = text[5:]
+            code = text.strip()
+            if(user_data.has_key(code)):
+                code_validate = user_data[code]?"Valid":"not Valid"
+                update.message.reply_text('You have already sent this code:%s, this is %s, please do not send this again'%(code,code_validate))
+            else:
+                if(validateCode(code)):
+                    user_data[code] = True
+                    update.message.reply_text('Congratulations! this code: %s is valid!'%(code))
+                else:
+                    user_data[code] = False
+                    update.message.reply_text('Sorry! this code: %s is not valid!'%(code))
 
+def validateCode(code):
+    if(len(code) > 5):
+        return True
+    else:
+        return False
 
 def error(bot, update, error):
     """Log Errors caused by Updates."""
