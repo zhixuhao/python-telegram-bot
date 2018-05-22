@@ -42,7 +42,7 @@ def help(bot, update):
 def echo(bot, update,user_data):
     """Echo the user message."""
     text = update.message.text
-    print type(user_data)
+    print user_data
     update.message.reply_text(update.message.text)
     if("/valid" in text):
         text = text[6:]
