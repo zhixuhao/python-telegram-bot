@@ -47,7 +47,9 @@ def echo(bot, update,user_data):
             code = text[5:]
             code = text.strip()
             if(user_data.has_key(code)):
-                code_validate = user_data[code]?"Valid":"not Valid"
+                code_validate = "not Valid"
+                if(user_data[code]):
+                    code_validate = "Valid"
                 update.message.reply_text('You have already sent this code:%s, this is %s, please do not send this again'%(code,code_validate))
             else:
                 if(validateCode(code)):
