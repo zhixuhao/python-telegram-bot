@@ -45,7 +45,7 @@ def echo(bot, update,user_data):
     if("valid" in text):
         if(text[:5] == "valid"):
             code = text[5:]
-            code = text.strip()
+            code = code.strip()
             if(user_data.has_key(code)):
                 code_validate = "not Valid"
                 if(user_data[code]):
