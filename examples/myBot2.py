@@ -42,7 +42,7 @@ def help(bot, update):
 def echo(bot, update):
     """Echo the user message."""
     text = update.message.text
-    if(text.contains("/valid")):
+    if("/valid" in text):
         text = text[6:]
         text = text.strip()
         update.message.reply_text(update.message.text)
