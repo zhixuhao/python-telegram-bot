@@ -39,9 +39,11 @@ def help(bot, update):
     update.message.reply_text('Help!')
 
 
-def echo(bot, update):
+def echo(bot, update,user_data):
     """Echo the user message."""
     text = update.message.text
+    print type(user_data)
+    update.message.reply_text(update.message.text)
     if("/valid" in text):
         text = text[6:]
         text = text.strip()
@@ -66,7 +68,7 @@ def main():
     dp.add_handler(CommandHandler("help", help))
 
     # on noncommand i.e message - echo the message on Telegram
-    dp.add_handler(MessageHandler(Filters.text, echo))
+    dp.add_handler(MessageHandler(Filters.text, echo,pass_user_data=True))
 
     # log all errors
     dp.add_error_handler(error)
